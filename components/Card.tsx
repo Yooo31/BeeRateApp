@@ -1,3 +1,4 @@
+import React from "react";
 import { ComponentPropsWithoutRef, forwardRef } from "react";
 import { Text, View } from "react-native";
 import { TextClassContext } from "./Text";
