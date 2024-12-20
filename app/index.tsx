@@ -37,11 +37,11 @@ export default function Index() {
   }, []);
 
   if (loading) {
-    return <Text>Loading...</Text>;
+    return <Text className="text-red-400">Loading...</Text>;
   }
 
   if (error) {
-    return <Text className="text-red-400">Erreur : {error}</Text>;
+    return <Text className="text-red-400">{error}</Text>;
   }
 
   return (
@@ -63,7 +63,7 @@ export default function Index() {
               alcohol={item.alcohol}
               price={item.price}
               rating={item.rating}
-              image={item.image}
+              image={"https://www.vandb.fr/media/cache/attachment/filter/vandb_b2c_product_gallery_main/3a22818443086ba533d3a730ffa7d18b/895374/67627e2e62809566376760.png"}
             />
           </View>
         )}
