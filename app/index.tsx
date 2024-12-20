@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { FlatList, View, Button } from "react-native";
+import { FlatList, View } from "react-native";
+import { FilterBar } from "@/components/FilterBar";
 import { BeerCard } from "@/components/BeerCard";
 
 const beers = [
@@ -44,10 +45,9 @@ export default function Index() {
 
   return (
     <View className="flex-1 p-6 bg-gray-50">
-      {/* Bouton pour changer le mode d'affichage */}
-      <Button
-        title={isSingleColumn ? "Afficher 2 par ligne" : "Afficher 1 par ligne"}
-        onPress={() => setIsSingleColumn((prev) => !prev)}
+      <FilterBar
+        isSingleColumn={isSingleColumn}
+        setIsSingleColumn={setIsSingleColumn}
       />
 
       <FlatList
@@ -56,9 +56,7 @@ export default function Index() {
         keyExtractor={(item) => item.id}
         numColumns={isSingleColumn ? 1 : 2}
         renderItem={({ item }) => (
-          <View
-            className={isSingleColumn ? "w-full" : "w-1/2 p-2"}
-          >
+          <View className={isSingleColumn ? "w-full" : "w-1/2 p-2"}>
             <BeerCard
               name={item.name}
               alcohol={item.alcohol}
