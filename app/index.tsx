@@ -1,47 +1,48 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FlatList, View } from "react-native";
 import { FilterBar } from "@/components/FilterBar";
 import { BeerCard } from "@/components/BeerCard";
-
-const beers = [
-  {
-    id: "1",
-    name: "Pale Ale",
-    alcohol: "5.5",
-    price: "3.50",
-    rating: 4,
-    image:
-      "https://www.vandb.fr/media/cache/attachment/filter/vandb_b2c_product_gallery_main/3a22818443086ba533d3a730ffa7d18b/895374/67627e2e62809566376760.png",
-  },
-  {
-    id: "2",
-    name: "IPA",
-    alcohol: "6.8",
-    rating: 5,
-    image:
-      "https://www.vandb.fr/media/cache/attachment/filter/vandb_b2c_product_gallery_main/3a22818443086ba533d3a730ffa7d18b/895374/67627e2e62809566376760.png",
-  },
-  {
-    id: "3",
-    name: "Stout",
-    alcohol: "4.2",
-    price: "4.00",
-    rating: 3,
-    image:
-      "https://www.vandb.fr/media/cache/attachment/filter/vandb_b2c_product_gallery_main/3a22818443086ba533d3a730ffa7d18b/895374/67627e2e62809566376760.png",
-  },
-  {
-    id: "4",
-    name: "Lager",
-    alcohol: "5.0",
-    rating: 4,
-    image:
-      "https://www.vandb.fr/media/cache/attachment/filter/vandb_b2c_product_gallery_main/3a22818443086ba533d3a730ffa7d18b/895374/67627e2e62809566376760.png",
-  },
-];
+import { Text } from "@/components/Text";
 
 export default function Index() {
   const [isSingleColumn, setIsSingleColumn] = useState(true);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const apiUrl = "http://10.31.37.196:4000/beers";
+        const response = await fetch(apiUrl);
+
+        if (!response.ok) {
+          throw new Error("Erreur de réseau");
+        }
+
+        const result = await response.json();
+        setData(result);
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Une erreur inconnue s'est produite");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return <Text>Loading...</Text>;
+  }
+
+  if (error) {
+    return <Text className="text-red-400">Erreur : {error}</Text>;
+  }
 
   return (
     <View className="flex-1 p-6 bg-gray-50">
@@ -51,7 +52,7 @@ export default function Index() {
       />
 
       <FlatList
-        data={beers}
+        data={data}
         key={isSingleColumn ? "one-column" : "two-columns"}
         keyExtractor={(item) => item.id}
         numColumns={isSingleColumn ? 1 : 2}
