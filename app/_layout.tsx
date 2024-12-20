@@ -1,29 +1,26 @@
 import React from "react";
+import "../global.css";
 import { Text, View } from "react-native";
 import { Slot } from "expo-router";
 import { useFonts } from "expo-font";
-import { Poppins_700Bold } from "@expo-google-fonts/poppins"; // Importer une police
+import { Poppins_700Bold } from "@expo-google-fonts/poppins";
 
-export default function Layout() {
+export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    Poppins_700Bold, // Charger la police
+    Poppins_700Bold,
   });
 
   if (!fontsLoaded) {
-    return <Text>Loading...</Text>; // Attendre le chargement des polices
+    return <Text>Loading...</Text>;
   }
 
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff" }}>
       <Text
         style={{
-          fontFamily: "Poppins_700Bold", // Appliquer la police cartoon ici
-          fontSize: 48,
-          color: "#FF6347", // Une couleur rouge-orange pour donner un effet cartoon
-          textShadowColor: "rgba(0, 0, 0, 0.3)", // Ajouter une ombre pour l'effet cartoon
-          textShadowOffset: { width: 2, height: 2 },
-          textShadowRadius: 10,
+          fontFamily: "Poppins_700Bold"
         }}
+        className="pt-12 text-gray-800 text-6xl"
       >
         BeeRate
       </Text>
@@ -31,3 +28,4 @@ export default function Layout() {
     </View>
   );
 }
+
