@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FlatList, View, TouchableOpacity } from "react-native";
 import { FilterBar } from "@/components/FilterBar";
 import { BeerCard } from "@/components/BeerCard";
@@ -46,6 +46,43 @@ const beers = [
 export default function Index() {
   const [isSingleColumn, setIsSingleColumn] = useState(true);
   const router = useRouter();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const apiUrl = "http://10.31.37.196:4000/beers";
+        const response = await fetch(apiUrl);
+
+        if (!response.ok) {
+          throw new Error("Erreur de réseau");
+        }
+
+        const result = await response.json();
+        setData(result);
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Une erreur inconnue s'est produite");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return <Text className="text-red-400">Loading...</Text>;
+  }
+
+  if (error) {
+    return <Text className="text-red-400">{error}</Text>;
+  }
 
   return (
     <>
@@ -56,7 +93,7 @@ export default function Index() {
         />
 
         <FlatList
-          data={beers}
+          data={data}
           key={isSingleColumn ? "one-column" : "two-columns"}
           keyExtractor={(item) => item.id}
           numColumns={isSingleColumn ? 1 : 2}
@@ -67,7 +104,7 @@ export default function Index() {
                 alcohol={item.alcohol}
                 price={item.price}
                 rating={item.rating}
-                image={item.image}
+                image={"https://www.vandb.fr/media/cache/attachment/filter/vandb_b2c_product_gallery_main/3a22818443086ba533d3a730ffa7d18b/895374/67627e2e62809566376760.png"}
               />
             </View>
           )}
