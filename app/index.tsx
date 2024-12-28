@@ -1,88 +1,43 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FlatList, View, TouchableOpacity } from "react-native";
 import { FilterBar } from "@/components/FilterBar";
 import { BeerCard } from "@/components/BeerCard";
 import { Text } from "@/components/Text";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-
-const beers = [
-  {
-    id: "1",
-    name: "Pale Ale",
-    alcohol: "5.5",
-    price: "3.50",
-    rating: 4,
-    image:
-      "https://www.vandb.fr/media/cache/attachment/filter/vandb_b2c_product_gallery_main/3a22818443086ba533d3a730ffa7d18b/895374/67627e2e62809566376760.png",
-  },
-  {
-    id: "2",
-    name: "IPA",
-    alcohol: "6.8",
-    rating: 5,
-    image:
-      "https://www.vandb.fr/media/cache/attachment/filter/vandb_b2c_product_gallery_main/3a22818443086ba533d3a730ffa7d18b/895374/67627e2e62809566376760.png",
-  },
-  {
-    id: "3",
-    name: "Stout",
-    alcohol: "4.2",
-    price: "4.00",
-    rating: 3,
-    image:
-      "https://www.vandb.fr/media/cache/attachment/filter/vandb_b2c_product_gallery_main/3a22818443086ba533d3a730ffa7d18b/895374/67627e2e62809566376760.png",
-  },
-  {
-    id: "4",
-    name: "Lager",
-    alcohol: "5.0",
-    rating: 4,
-    image:
-      "https://www.vandb.fr/media/cache/attachment/filter/vandb_b2c_product_gallery_main/3a22818443086ba533d3a730ffa7d18b/895374/67627e2e62809566376760.png",
-  },
-];
+import { useBeers } from "@/hooks/useBeers";
+import { SortState } from "@/types/common";
+import { Beer } from "@/types/beer";
 
 export default function Index() {
-  const [isSingleColumn, setIsSingleColumn] = useState(true);
+  const { data, loading, error } = useBeers();
   const router = useRouter();
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [filteredData, setFilteredData] = useState<Beer[]>([]);
+  const [isSingleColumn, setIsSingleColumn] = useState(true);
+  const [sortState, setSortState] = useState<SortState>({ sortBy: null, order: "asc" });
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const apiUrl = "http://10.31.37.196:4000/beers";
-        const response = await fetch(apiUrl);
+    setFilteredData(data);
+  }, [data]);
 
-        if (!response.ok) {
-          throw new Error("Erreur de réseau");
-        }
+  const handleSortChange = (sortBy: "price" | "rating") => {
+    setSortState((prev) => {
+      const isSameSort = prev.sortBy === sortBy;
+      const newOrder = isSameSort && prev.order === "asc" ? "desc" : "asc";
 
-        const result = await response.json();
-        setData(result);
-      } catch (err) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("Une erreur inconnue s'est produite");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
+      const sortedData = [...data].sort((a, b) => {
+        const valueA = sortBy === "price" ? parseFloat(a.price || "0") : a.rating;
+        const valueB = sortBy === "price" ? parseFloat(b.price || "0") : b.rating;
+        return newOrder === "asc" ? valueA - valueB : valueB - valueA;
+      });
 
-    fetchData();
-  }, []);
+      setFilteredData(sortedData);
+      return { sortBy, order: newOrder };
+    });
+  };
 
-  if (loading) {
-    return <Text className="text-red-400">Loading...</Text>;
-  }
-
-  if (error) {
-    return <Text className="text-red-400">{error}</Text>;
-  }
+  if (loading) return <Text className="text-red-400">Loading...</Text>;
+  if (error) return <Text className="text-red-400">{error}</Text>;
 
   return (
     <>
@@ -90,22 +45,17 @@ export default function Index() {
         <FilterBar
           isSingleColumn={isSingleColumn}
           setIsSingleColumn={setIsSingleColumn}
+          sortState={sortState}
+          onSortChange={handleSortChange}
         />
-
         <FlatList
-          data={data}
+          data={filteredData}
           key={isSingleColumn ? "one-column" : "two-columns"}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()}
           numColumns={isSingleColumn ? 1 : 2}
           renderItem={({ item }) => (
             <View className={isSingleColumn ? "w-full" : "w-1/2 p-2"}>
-              <BeerCard
-                name={item.name}
-                alcohol={item.alcohol}
-                price={item.price}
-                rating={item.rating}
-                image={"https://www.vandb.fr/media/cache/attachment/filter/vandb_b2c_product_gallery_main/3a22818443086ba533d3a730ffa7d18b/895374/67627e2e62809566376760.png"}
-              />
+              <BeerCard {...item} />
             </View>
           )}
           contentContainerStyle={{ padding: 16, gap: 16 }}
@@ -113,11 +63,11 @@ export default function Index() {
       </View>
 
       <TouchableOpacity
-        onPress={() => (router.push as (url: string) => void)("/add-beer")}
+        onPress={() => router.push("/add-beer")}
         className="absolute bottom-8 right-8 z-auto"
       >
         <Ionicons name={"add-circle"} size={70} color="#1f2937" />
       </TouchableOpacity>
-      </>
+    </>
   );
 }

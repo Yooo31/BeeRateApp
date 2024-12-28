@@ -13,16 +13,18 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import { API_URL } from "@/config/api";
 
 export default function AddBeer() {
   const router = useRouter();
 
-  const [name, setName] = useState("");
-  const [alcohol, setAlcohol] = useState("");
-  const [price, setPrice] = useState("");
-  const [rating, setRating] = useState("");
+  const [name, setName] = useState<string>("");
+  const [alcohol, setAlcohol] = useState<string>("");
+  const [price, setPrice] = useState<string>("");
+  const [rating, setRating] = useState<string>("");
   const [photo, setPhoto] = useState<string | null>(null);
 
+  // Request camera permissions
   useEffect(() => {
     (async () => {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -35,6 +37,7 @@ export default function AddBeer() {
     })();
   }, []);
 
+  // Handle image selection
   const handlePickImage = () => {
     Alert.alert("Ajouter une photo", "Choisissez une option", [
       { text: "Prendre une photo", onPress: pickFromCamera },
@@ -65,9 +68,11 @@ export default function AddBeer() {
     }
   };
 
+  // Handle form submission
   const handleSubmit = async () => {
     Keyboard.dismiss();
 
+    // Validate input
     if (!name || !alcohol || !rating) {
       Alert.alert("Erreur", "Les champs obligatoires doivent être remplis.");
       return;
@@ -78,15 +83,17 @@ export default function AddBeer() {
       return;
     }
 
+    // Construct beer data
     const beerData = {
       name,
       alcohol,
       price: price || null,
-      rating
+      rating: parseFloat(rating),
+      image: photo || null,
     };
 
     try {
-      const response = await fetch("http://192.168.1.203:4000/beers", {
+      const response = await fetch(`${API_URL}/beers`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -115,6 +122,7 @@ export default function AddBeer() {
         <View className="flex-1 p-6 bg-gray-50">
           <Text className="text-xl font-bold mb-4 text-gray-800">Ajouter une bière</Text>
 
+          {/* Photo input */}
           <TouchableOpacity
             onPress={handlePickImage}
             className="h-40 bg-gray-200 rounded-lg items-center justify-center mb-4 w-full"
@@ -130,6 +138,7 @@ export default function AddBeer() {
             )}
           </TouchableOpacity>
 
+          {/* Name input */}
           <TextInput
             placeholder="Nom de la bière *"
             placeholderTextColor="#888888"
@@ -138,6 +147,7 @@ export default function AddBeer() {
             className="h-12 border border-gray-300 rounded-lg px-4 mb-4 w-full"
           />
 
+          {/* Alcohol input */}
           <TextInput
             placeholder="Degré d'alcool (%) *"
             placeholderTextColor="#888888"
@@ -147,6 +157,7 @@ export default function AddBeer() {
             className="h-12 border border-gray-300 rounded-lg px-4 mb-4 w-full"
           />
 
+          {/* Price input */}
           <TextInput
             placeholder="Prix (€)"
             placeholderTextColor="#888888"
@@ -156,6 +167,7 @@ export default function AddBeer() {
             className="h-12 border border-gray-300 rounded-lg px-4 mb-4 w-full"
           />
 
+          {/* Rating input */}
           <TextInput
             placeholder="Note (max 10) *"
             placeholderTextColor="#888888"
@@ -165,6 +177,7 @@ export default function AddBeer() {
             className="h-12 border border-gray-300 rounded-lg px-4 mb-4 w-full"
           />
 
+          {/* Buttons */}
           <View className="flex-row justify-between mt-4 w-full">
             <TouchableOpacity
               onPress={() => router.push("/")}
