@@ -1,60 +1,24 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FlatList, View, TouchableOpacity } from "react-native";
 import { FilterBar } from "@/components/FilterBar";
 import { BeerCard } from "@/components/BeerCard";
 import { Text } from "@/components/Text";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-
-type Beer = {
-  id: number;
-  name: string;
-  alcohol: string;
-  price?: string;
-  rating: number;
-  image: string;
-};
+import { useBeers } from "@/hooks/useBeers";
+import { SortState } from "@/types/common";
+import { Beer } from "@/types/beer";
 
 export default function Index() {
-  const [isSingleColumn, setIsSingleColumn] = useState(true);
-  const [data, setData] = useState<Beer[]>([]);
-  const [filteredData, setFilteredData] = useState<Beer[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const [sortState, setSortState] = useState<{
-    sortBy: "price" | "rating" | null;
-    order: "asc" | "desc";
-  }>({ sortBy: null, order: "asc" });
-
+  const { data, loading, error } = useBeers();
   const router = useRouter();
+  const [filteredData, setFilteredData] = useState<Beer[]>([]);
+  const [isSingleColumn, setIsSingleColumn] = useState(true);
+  const [sortState, setSortState] = useState<SortState>({ sortBy: null, order: "asc" });
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const apiUrl = "http://192.168.1.203:4000/beers";
-        const response = await fetch(apiUrl);
-
-        if (!response.ok) {
-          throw new Error("Erreur de réseau");
-        }
-
-        const result = await response.json();
-        setData(result);
-        setFilteredData(result);
-      } catch (err) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("Une erreur inconnue s'est produite");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+    setFilteredData(data);
+  }, [data]);
 
   const handleSortChange = (sortBy: "price" | "rating") => {
     setSortState((prev) => {
@@ -68,18 +32,12 @@ export default function Index() {
       });
 
       setFilteredData(sortedData);
-
-      return { sortBy, order: newOrder as "asc" | "desc" };
+      return { sortBy, order: newOrder };
     });
   };
 
-  if (loading) {
-    return <Text className="text-red-400">Loading...</Text>;
-  }
-
-  if (error) {
-    return <Text className="text-red-400">{error}</Text>;
-  }
+  if (loading) return <Text className="text-red-400">Loading...</Text>;
+  if (error) return <Text className="text-red-400">{error}</Text>;
 
   return (
     <>
@@ -90,7 +48,6 @@ export default function Index() {
           sortState={sortState}
           onSortChange={handleSortChange}
         />
-
         <FlatList
           data={filteredData}
           key={isSingleColumn ? "one-column" : "two-columns"}
@@ -98,14 +55,7 @@ export default function Index() {
           numColumns={isSingleColumn ? 1 : 2}
           renderItem={({ item }) => (
             <View className={isSingleColumn ? "w-full" : "w-1/2 p-2"}>
-              <BeerCard
-                id={item.id}
-                name={item.name}
-                alcohol={item.alcohol}
-                price={item.price}
-                rating={item.rating}
-                image={item.image}
-              />
+              <BeerCard {...item} />
             </View>
           )}
           contentContainerStyle={{ padding: 16, gap: 16 }}
