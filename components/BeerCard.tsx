@@ -4,6 +4,7 @@ import { Text } from "./Text";
 import { Ionicons } from "@expo/vector-icons";
 
 type BeerCardProps = {
+  id: number;
   name: string;
   alcohol: string;
   price?: string;

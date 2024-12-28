@@ -6,54 +6,33 @@ import { Text } from "@/components/Text";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
-const beers = [
-  {
-    id: "1",
-    name: "Pale Ale",
-    alcohol: "5.5",
-    price: "3.50",
-    rating: 4,
-    image:
-      "https://www.vandb.fr/media/cache/attachment/filter/vandb_b2c_product_gallery_main/3a22818443086ba533d3a730ffa7d18b/895374/67627e2e62809566376760.png",
-  },
-  {
-    id: "2",
-    name: "IPA",
-    alcohol: "6.8",
-    rating: 5,
-    image:
-      "https://www.vandb.fr/media/cache/attachment/filter/vandb_b2c_product_gallery_main/3a22818443086ba533d3a730ffa7d18b/895374/67627e2e62809566376760.png",
-  },
-  {
-    id: "3",
-    name: "Stout",
-    alcohol: "4.2",
-    price: "4.00",
-    rating: 3,
-    image:
-      "https://www.vandb.fr/media/cache/attachment/filter/vandb_b2c_product_gallery_main/3a22818443086ba533d3a730ffa7d18b/895374/67627e2e62809566376760.png",
-  },
-  {
-    id: "4",
-    name: "Lager",
-    alcohol: "5.0",
-    rating: 4,
-    image:
-      "https://www.vandb.fr/media/cache/attachment/filter/vandb_b2c_product_gallery_main/3a22818443086ba533d3a730ffa7d18b/895374/67627e2e62809566376760.png",
-  },
-];
+type Beer = {
+  id: number;
+  name: string;
+  alcohol: string;
+  price?: string;
+  rating: number;
+  image: string;
+};
 
 export default function Index() {
   const [isSingleColumn, setIsSingleColumn] = useState(true);
-  const router = useRouter();
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<Beer[]>([]);
+  const [filteredData, setFilteredData] = useState<Beer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [sortState, setSortState] = useState<{
+    sortBy: "price" | "rating" | null;
+    order: "asc" | "desc";
+  }>({ sortBy: null, order: "asc" });
+
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const apiUrl = "http://10.31.37.196:4000/beers";
+        const apiUrl = "http://192.168.1.203:4000/beers";
         const response = await fetch(apiUrl);
 
         if (!response.ok) {
@@ -62,6 +41,7 @@ export default function Index() {
 
         const result = await response.json();
         setData(result);
+        setFilteredData(result);
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -75,6 +55,23 @@ export default function Index() {
 
     fetchData();
   }, []);
+
+  const handleSortChange = (sortBy: "price" | "rating") => {
+    setSortState((prev) => {
+      const isSameSort = prev.sortBy === sortBy;
+      const newOrder = isSameSort && prev.order === "asc" ? "desc" : "asc";
+
+      const sortedData = [...data].sort((a, b) => {
+        const valueA = sortBy === "price" ? parseFloat(a.price || "0") : a.rating;
+        const valueB = sortBy === "price" ? parseFloat(b.price || "0") : b.rating;
+        return newOrder === "asc" ? valueA - valueB : valueB - valueA;
+      });
+
+      setFilteredData(sortedData);
+
+      return { sortBy, order: newOrder as "asc" | "desc" };
+    });
+  };
 
   if (loading) {
     return <Text className="text-red-400">Loading...</Text>;
@@ -90,21 +87,24 @@ export default function Index() {
         <FilterBar
           isSingleColumn={isSingleColumn}
           setIsSingleColumn={setIsSingleColumn}
+          sortState={sortState}
+          onSortChange={handleSortChange}
         />
 
         <FlatList
-          data={data}
+          data={filteredData}
           key={isSingleColumn ? "one-column" : "two-columns"}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()}
           numColumns={isSingleColumn ? 1 : 2}
           renderItem={({ item }) => (
             <View className={isSingleColumn ? "w-full" : "w-1/2 p-2"}>
               <BeerCard
+                id={item.id}
                 name={item.name}
                 alcohol={item.alcohol}
                 price={item.price}
                 rating={item.rating}
-                image={"https://www.vandb.fr/media/cache/attachment/filter/vandb_b2c_product_gallery_main/3a22818443086ba533d3a730ffa7d18b/895374/67627e2e62809566376760.png"}
+                image={item.image}
               />
             </View>
           )}
@@ -113,11 +113,11 @@ export default function Index() {
       </View>
 
       <TouchableOpacity
-        onPress={() => (router.push as (url: string) => void)("/add-beer")}
+        onPress={() => router.push("/add-beer")}
         className="absolute bottom-8 right-8 z-auto"
       >
         <Ionicons name={"add-circle"} size={70} color="#1f2937" />
       </TouchableOpacity>
-      </>
+    </>
   );
 }
