@@ -65,7 +65,7 @@ export default function AddBeer() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     Keyboard.dismiss();
 
     if (!name || !alcohol || !rating) {
@@ -78,16 +78,32 @@ export default function AddBeer() {
       return;
     }
 
-    console.log({
+    const beerData = {
       name,
       alcohol,
-      price: price || "Non spécifié",
-      rating,
-      photo: photo || "Pas d'image",
-    });
+      price: price || null,
+      rating
+    };
 
-    Alert.alert("Succès", "La bière a été ajoutée !");
-    router.push("/");
+    try {
+      const response = await fetch("http://192.168.1.203:4000/beers", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(beerData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP : ${response.status}`);
+      }
+
+      Alert.alert("Succès", "La bière a été ajoutée !");
+      router.push("/");
+    } catch (error) {
+      console.error("Erreur lors de l'ajout de la bière :", error);
+      Alert.alert("Erreur", "Une erreur est survenue lors de l'envoi des données.");
+    }
   };
 
   return (
