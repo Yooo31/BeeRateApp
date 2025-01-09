@@ -4,5 +4,5 @@ export type Beer = {
   alcohol: string;
   price?: string;
   rating: number;
-  image: string;
+  photo: string;
 };

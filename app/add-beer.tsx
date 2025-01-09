@@ -72,7 +72,7 @@ export default function AddBeer() {
   const handleSubmit = async () => {
     Keyboard.dismiss();
 
-    // Validate input
+    // Validation des champs obligatoires
     if (!name || !alcohol || !rating) {
       Alert.alert("Erreur", "Les champs obligatoires doivent être remplis.");
       return;
@@ -83,22 +83,28 @@ export default function AddBeer() {
       return;
     }
 
-    // Construct beer data
-    const beerData = {
-      name,
-      alcohol,
-      price: price || null,
-      rating: parseFloat(rating),
-      image: photo || null,
-    };
+    // Préparation des données pour la requête
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("alcohol", alcohol);
+    formData.append("price", price || "");
+    formData.append("rating", rating);
+
+    if (photo) {
+      formData.append("photo", {
+        uri: photo,
+        name: `photo_${Date.now()}.jpg`, // Nom du fichier
+        type: "image/jpeg", // Type MIME
+      });
+    }
 
     try {
-      const response = await fetch(`${API_URL}/beers`, {
+      const response = await fetch(`${API_URL}/add/beer`, {
         method: "POST",
+        body: formData,
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "multipart/form-data",
         },
-        body: JSON.stringify(beerData),
       });
 
       if (!response.ok) {
@@ -109,7 +115,10 @@ export default function AddBeer() {
       router.push("/");
     } catch (error) {
       console.error("Erreur lors de l'ajout de la bière :", error);
-      Alert.alert("Erreur", "Une erreur est survenue lors de l'envoi des données.");
+      Alert.alert(
+        "Erreur",
+        "Une erreur est survenue lors de l'envoi des données."
+      );
     }
   };
 
@@ -120,7 +129,9 @@ export default function AddBeer() {
     >
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View className="flex-1 p-6 bg-gray-50">
-          <Text className="text-xl font-bold mb-4 text-gray-800">Ajouter une bière</Text>
+          <Text className="text-xl font-bold mb-4 text-gray-800">
+            Ajouter une bière
+          </Text>
 
           {/* Photo input */}
           <TouchableOpacity
@@ -134,7 +145,9 @@ export default function AddBeer() {
                 style={{ resizeMode: "cover" }}
               />
             ) : (
-              <Text className="text-gray-500">Ajouter une photo (facultatif)</Text>
+              <Text className="text-gray-500">
+                Ajouter une photo (facultatif)
+              </Text>
             )}
           </TouchableOpacity>
 

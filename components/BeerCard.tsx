@@ -3,12 +3,13 @@ import { View, Image } from "react-native";
 import { Text } from "./Text";
 import { Ionicons } from "@expo/vector-icons";
 import { Beer } from "@/types/beer";
+import { API_URL } from "@/config/api";
 
-export const BeerCard: React.FC<Beer> = ({ name, alcohol, price, rating, image }) => {
+export const BeerCard: React.FC<Beer> = ({ name, alcohol, price, rating, photo }) => {
   return (
     <View className="rounded-lg bg-white shadow-md overflow-hidden w-full max-w-sm">
       <Image
-        source={{ uri: image }}
+        source={{ uri: `${API_URL}/${photo}` }}
         className="w-full h-40 object-cover"
         alt={name}
       />
