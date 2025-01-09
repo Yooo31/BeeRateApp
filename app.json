@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Nous avons besoin d'accéder à vos photos pour ajouter des images.",
+        "NSCameraUsageDescription": "Nous avons besoin d'accéder à votre caméra pour prendre des photos."
+      }
     },
     "android": {
       "adaptiveIcon": {
