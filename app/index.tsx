@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { FlatList, View, TouchableOpacity } from "react-native";
+import { FlatList, View, TouchableOpacity, Modal } from "react-native";
 import { FilterBar } from "@/components/FilterBar";
 import { BeerCard } from "@/components/BeerCard";
+import { BeerModal } from "@/components/BeerModal";
 import { Text } from "@/components/Text";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,6 +16,8 @@ export default function Index() {
   const [filteredData, setFilteredData] = useState<Beer[]>([]);
   const [isSingleColumn, setIsSingleColumn] = useState(true);
   const [sortState, setSortState] = useState<SortState>({ sortBy: null, order: "asc" });
+  const [selectedBeer, setSelectedBeer] = useState<Beer | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
     setFilteredData(data);
@@ -36,6 +39,16 @@ export default function Index() {
     });
   };
 
+  const openModal = (beer: Beer) => {
+    setSelectedBeer(beer);
+    setIsModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setSelectedBeer(null);
+    setIsModalVisible(false);
+  };
+
   if (loading) return <Text className="text-red-400">Loading...</Text>;
   if (error) return <Text className="text-red-400">{error}</Text>;
 
@@ -55,12 +68,20 @@ export default function Index() {
           numColumns={isSingleColumn ? 1 : 2}
           renderItem={({ item }) => (
             <View className={isSingleColumn ? "w-full" : "w-1/2 p-2"}>
-              <BeerCard {...item} />
+              <BeerCard {...item} onPress={() => openModal(item)} />
             </View>
           )}
           contentContainerStyle={{ padding: 16, gap: 16 }}
         />
       </View>
+
+      {selectedBeer && (
+        <BeerModal
+          beer={selectedBeer}
+          isVisible={isModalVisible}
+          onClose={closeModal}
+        />
+      )}
 
       <TouchableOpacity
         onPress={() => router.push("/add-beer")}
