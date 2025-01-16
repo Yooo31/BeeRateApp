@@ -3,6 +3,7 @@ import * as Slot from "@rn-primitives/slot";
 import { SlottableTextProps, TextRef } from "@rn-primitives/types";
 import { Text as RNText } from "react-native";
 import { cn } from "@/lib/utils";
+import React from "react";
 
 const TextClassContext = createContext<string | undefined>(undefined);
 
