@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FlatList, View, TouchableOpacity, Modal } from "react-native";
+import { FlatList, View, TouchableOpacity } from "react-native";
 import { FilterBar } from "@/components/FilterBar";
 import { BeerCard } from "@/components/BeerCard";
 import { BeerModal } from "@/components/BeerModal";
@@ -9,6 +9,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useBeers } from "@/hooks/useBeers";
 import { SortState } from "@/types/common";
 import { Beer } from "@/types/beer";
+import HomeSkeleton from "@/components/Skeleton/HomeSkeleton";
 
 export default function Index() {
   const { data, loading, error } = useBeers();
@@ -49,7 +50,7 @@ export default function Index() {
     setIsModalVisible(false);
   };
 
-  if (loading) return <Text className="text-red-400">Loading...</Text>;
+  if (loading) return <HomeSkeleton/>;
   if (error) return <Text className="text-red-400">{error}</Text>;
 
   return (
